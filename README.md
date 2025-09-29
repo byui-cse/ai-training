@@ -15,8 +15,9 @@ There will be an instruction file to support the entire team. The team can be as
 ## Team Roles
 
 1. Product Owner
-1. Senior Software Engineer
-1. Junior Software Engineer
+1. Staff Software Engineer
+1. L3 Software Engineer
+1. Software Engineering Intern
 1. QA Engineer
 1. UX Designer
 1. Security Analyst
@@ -32,7 +33,7 @@ If your team file includes the following categories, it could yield good results
 - **Directive**: The purpose and task of the team
 - **Constraints**: Rules the team needs to follow
 - **Examples**: How the team should interact
-- **Available Team Members**: Which specialty roles it'll have access to
+- **Available Team Members**: Which specialty roles it'll have access to and when they should be used
 
 ## Role Instruction File
 
