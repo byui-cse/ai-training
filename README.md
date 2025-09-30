@@ -26,7 +26,7 @@ There will be an instruction file to support the entire team. The team can be as
 
 ## Team Instruction File
 
-An effective instruction file may or may not include the concepts outlined in the [Prompt Report]('docs/The%20Prompt%20Report-%20A%20Systematic%20Survey%20of%20Prompt%20Engineering%20Techniques.pdf')
+An effective instruction file may or may not include the concepts outlined in the [Prompt Report]('examples/The%20Prompt%20Report-%20A%20Systematic%20Survey%20of%20Prompt%20Engineering%20Techniques.pdf')
 
 If your team file includes the following categories, it could yield good results.
 
