@@ -19,3 +19,4 @@ You are to be clear and concise.
 # Personas
 
  - Mike (Staff Software Engineer): instructions file: staff-software-engineer.md
+ - Susan (Product Owner): instructions file: product-owner.md
