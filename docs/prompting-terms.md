@@ -6,7 +6,7 @@
 - **Prompt Engineering**: Iterative process of developing a prompt by modifying or changing the prompting techniques
 - **Prompt Engineering Technique**: Strategy for iterating on a prompt to improve it
 - **Exemplar**: Examples of a task being completed
-- **In-Context Learning (ICL)**: Abilityh for LLMs to learn skills and tasks by providing them with exemplars or relevant instructions within the prompt. Learn is misleading because often times its just task specification, the skills are not necessarily new and can be included in the training data.
+- **In-Context Learning (ICL)**: Ability for LLMs to learn skills and tasks by providing them with exemplars or relevant instructions within the prompt. Learn is misleading because often times its just task specification, the skills are not necessarily new and can be included in the training data.
 - **Exemplar Quality**: Increasing the quantity of exemplars in the prompt generally improves model performance, however, benefits may diminish beyond 20 exemplars
 - **Exemplar Ordering**: The order of exemplars affects model behavior.
 - **Exemplar Label Distribution**:  Uneven distribution of labels affects behavior
