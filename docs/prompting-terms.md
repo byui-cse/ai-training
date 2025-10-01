@@ -1,0 +1,39 @@
+# Common Terms
+
+- **Prompting**: Process of providing a prompt to generate a response.
+- **Prompt Chain**: Two or more prompt templates used in succession
+- **Prompting Technique**: Blueprint that describes how to structure a prompt(s)
+- **Prompt Engineering**: Iterative process of developing a prompt by modifying or changing the prompting techniques
+- **Prompt Engineering Technique**: Strategy for iterating on a prompt to improve it
+- **Exemplar**: Examples of a task being completed
+- **In-Context Learning (ICL)**: Abilityh for LLMs to learn skills and tasks by providing them with exemplars or relevant instructions within the prompt. Learn is misleading because often times its just task specification, the skills are not necessarily new and can be included in the training data.
+- **Exemplar Quality**: Increasing the quantity of exemplars in the prompt generally improves model performance, however, benefits may diminish beyond 20 exemplars
+- **Exemplar Ordering**: The order of exemplars affects model behavior.
+- **Exemplar Label Distribution**:  Uneven distribution of labels affects behavior
+- **Exemplar Label Quality**: Certain settings, label quality is a significant impact on performance
+- **Exemplar Format**: Formatting of exemplars affects performance, one of the most common formats is "Q: {input}, A: {label}"
+- **Exemplar Similarity**: Selecting diverse exemplars can increase performance
+- **Instruction Selection**: The instructions do not show evidence that it improves correctness, but it can guide output attributes
+- **KNN**: Selects exemplars similar to the input to boost performance
+- **Vote-K**: Pick diverse exemplars from an unlabeled dataset
+- **Self-Generated In-Context Learning (SG-ICL)**: Use LLMs to generate exemplars. This is not as effective
+- **Prompt Mining**: Finding common phrase/occurrence during the training process
+- **Role Prompting**: Persona prompting, assigns a role to the prompt to create more desirable outputs. In some cases, it improves output
+- **Style Prompting**: A technique to shape the output
+- **Emotion Prompting**: Using phrases like "this is important to my career" can improve performance
+- **System 2 Attention**:  Asking the LLM to rewrite the prompt and remove any information unrelated to the question, then pass the revised prompt as the prompt
+- **Rephrase and Respond (RaR)**: Instruct the LLM to rephrase and expand the questions before generating the final answer. "Rephrase and expand the question, and then respond."
+- **Re-reading (RE2)**: Adds the phrase "Read the question again:" in addition to actually restating the question improves reasoning ability 
+- **Self-Ask**: Prompts LLMs to first decide if they need to ask follow up questions for a given prompt
+- **Chain-of-thought Prompting**: few-shot prompting to express its thought process before delivering the final answer
+- **Zero-Shot-CoT**: "Let's think this step by step" or using "First, think about this logically"
+- **Step-Back prompting**: Ask a generic high-level question before delving into reasoning.
+- **Analogical Prompting**: Automatically generate exemplars that include CoT
+- **Thread-of-Thought (ThoT) prompting**: It uses "Walk me through this context in manageable parts step by step, summarizing and analyzing as we go."
+- **Contrastive CoT**: Give positive and negative explanations to CoT to show how and how not to reason
+- **Active Prompting**: Starts with questions/exemplars, asks the LLM to solve, then give it an uncertainty score. The human rewrites the exemplars for the highest quality
+- **Least to Most Prompting**: Break a problem into sub-problems without solving them.
+- **Plan and Solve Prompting**: "Let's first understand the problem and devise a plan to solve it. Then, let's carry out a plan and solve the problem step by step."
+- **Answer Space**: Domain of values it's structure may contain, binary labeling, classification, etc.
+- **Answer Shape**: it's physical format, token, span, image, video
+- **Answer Extractor**: Answer is located within the output. We can use a separate LLM to extract the answer
