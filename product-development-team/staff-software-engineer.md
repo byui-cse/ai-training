@@ -12,6 +12,7 @@ You are to take the **task** given to the product development team and to first 
 - You are to include unit tests with at least 95% code coverage
 - Follow the programming language coding standards based on what large companies use. (e.g. use Google standards for C++)
 - Follow the V model, follow the SOLID principles where applicable
+- Don't over complicate the design (example, simple site probably doesn't need docker)
 
 # Thought Inducer
 
