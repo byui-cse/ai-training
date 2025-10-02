@@ -1,58 +1,15 @@
-"""
-Services package for business logic.
-"""
-
-from .auth import (
-    create_access_token,
-    create_refresh_token,
-    get_password_hash,
-    verify_password,
-    verify_token,
-)
-from .item import (
-    create_item,
-    delete_item,
-    get_ending_soon_items,
-    get_item,
-    get_item_with_bid_stats,
-    get_items,
-    get_popular_items,
-    update_item,
-)
-from .user import (
-    authenticate_user,
-    create_user,
-    delete_user,
-    get_user,
-    get_user_by_email,
-    get_user_by_username,
-    get_users,
-    update_user,
-)
+from .auth import verify_password, get_password_hash, create_access_token, verify_token
+from .user import get_user_by_email, get_user_by_username, get_user_by_id, create_user, update_user, authenticate_user
+from .item import get_item_by_id, get_items, get_active_items, get_user_items, create_item, update_item, activate_item, end_expired_auctions, get_item_with_bid_count
+from .bid import get_bid_by_id, get_item_bids, get_user_bids, get_highest_bid_for_item, create_bid, validate_bid_amount
 
 __all__ = [
-    # Auth functions
-    "create_access_token",
-    "create_refresh_token",
-    "get_password_hash",
-    "verify_password",
-    "verify_token",
-    # User functions
-    "authenticate_user",
-    "create_user",
-    "delete_user",
-    "get_user",
-    "get_user_by_email",
-    "get_user_by_username",
-    "get_users",
-    "update_user",
-    # Item functions
-    "create_item",
-    "delete_item",
-    "get_ending_soon_items",
-    "get_item",
-    "get_item_with_bid_stats",
-    "get_items",
-    "get_popular_items",
-    "update_item",
+    # Auth services
+    "verify_password", "get_password_hash", "create_access_token", "verify_token",
+    # User services
+    "get_user_by_email", "get_user_by_username", "get_user_by_id", "create_user", "update_user", "authenticate_user",
+    # Item services
+    "get_item_by_id", "get_items", "get_active_items", "get_user_items", "create_item", "update_item", "activate_item", "end_expired_auctions", "get_item_with_bid_count",
+    # Bid services
+    "get_bid_by_id", "get_item_bids", "get_user_bids", "get_highest_bid_for_item", "create_bid", "validate_bid_amount"
 ]

@@ -1,53 +1,71 @@
-# Staff Engineer Thinking Process
+# Staff Engineer Technical Planning - Auction Website
 
-Step-by-step technical planning and architecture:
+## Step 1: Technology Stack Analysis
+Backend: Python - FastAPI for modern async API, SQLAlchemy for ORM, Pydantic for validation
+Frontend: HTML/CSS/JS - Vanilla for simplicity, Bootstrap/Material Design for modern look
+Database: SQLite for development, PostgreSQL for production
+Testing: pytest for unit tests, coverage for metrics
 
-1. Technology Stack Decision:
-   - Backend: Python (FastAPI for REST API, as it's modern and fast)
-   - Database: PostgreSQL for relational data, Redis for caching/session management
-   - Frontend: React.js for modern SPA
-   - Authentication: JWT tokens
-   - Real-time: WebSockets for bidding updates
+## Step 2: Architecture Design
+Follow Clean Architecture principles:
+- Domain layer: Core business logic (Auction, Bid, User entities)
+- Application layer: Use cases (CreateAuction, PlaceBid, etc.)
+- Infrastructure layer: Database adapters, external services
+- Presentation layer: API endpoints, HTML templates
 
-2. Architecture Planning:
-   - Follow clean architecture principles
-   - Separate concerns: models, schemas, services, endpoints
-   - Use dependency injection
-   - Include proper error handling and logging
+## Step 3: Database Schema Planning
+Core entities:
+- Users (id, email, password_hash, role, created_at)
+- Items (id, title, description, starting_price, current_price, seller_id, start_time, end_time, status)
+- Bids (id, item_id, bidder_id, amount, timestamp)
 
-3. Database Design:
-   - Users table (id, email, password_hash, created_at, etc.)
-   - Items table (id, title, description, starting_price, current_price, auction_end, seller_id, etc.)
-   - Bids table (id, item_id, user_id, amount, timestamp)
-   - Categories table for item categorization
+Relationships: User has many Items, Item has many Bids, Bid belongs to User and Item
 
-4. API Design:
-   - RESTful endpoints for CRUD operations
-   - WebSocket endpoints for real-time bidding
-   - Proper validation using Pydantic schemas
-   - Rate limiting for bidding endpoints
+## Step 4: API Design
+RESTful endpoints:
+- POST /users - Register user
+- POST /auth/login - Login
+- GET /items - List auctions
+- POST /items - Create auction
+- POST /items/{id}/bids - Place bid
+- GET /users/{id}/items - User listings
+- GET /users/{id}/bids - User bids
 
-5. Security Considerations:
-   - Password hashing
-   - JWT authentication
-   - Input validation and sanitization
-   - CORS configuration
-   - SQL injection prevention
+## Step 5: Frontend Architecture
+Simple SPA structure:
+- index.html - Home page
+- login.html - Authentication
+- create-item.html - New auction form
+- item-detail.html - Auction page with bidding
+- profile.html - User dashboard
 
-6. Testing Strategy:
-   - Unit tests for all business logic
-   - Integration tests for API endpoints
-   - 95% code coverage requirement
-   - Use pytest framework
+CSS: Modern design with flexbox/grid, clean typography, responsive design
 
-7. Deployment Considerations:
-   - Docker containers for easy deployment
-   - Environment-based configuration
-   - Database migrations
-   - Logging and monitoring
+## Step 6: Security Considerations
+- Password hashing (bcrypt)
+- JWT tokens for authentication
+- Input validation and sanitization
+- CSRF protection
+- HTTPS enforcement
 
-8. Code Quality:
-   - Follow PEP 8 standards
-   - Type hints throughout
-   - Comprehensive documentation
-   - SOLID principles application
+## Step 7: Testing Strategy
+Unit tests for:
+- Business logic (auction rules, bid validation)
+- API endpoints
+- Database operations
+- Authentication logic
+
+Target: 95%+ code coverage
+
+## Step 8: Development Phases
+Phase 1: Core backend (users, items, bids)
+Phase 2: Frontend integration
+Phase 3: Polish and testing
+Phase 4: Deployment preparation
+
+## Step 9: Code Quality Standards
+- PEP 8 compliance
+- Type hints throughout
+- Docstrings for all public functions
+- Pre-commit hooks for linting
+- CI/CD pipeline for automated testing

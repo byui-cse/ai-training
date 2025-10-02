@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auction House - Bid Smart, Win Big</title>
+  <link rel="stylesheet" href="static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <h1>Auction House</h1>
+      </div>
+      <div class="nav-links">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#auctions" class="nav-link">Auctions</a>
+        <a href="#sell" class="nav-link">Sell</a>
+        <div class="auth-buttons">
+          <button id="loginBtn" class="btn btn-outline">Login</button>
+          <button id="registerBtn" class="btn btn-primary">Register</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">Discover Unique Items</h1>
+          <p class="hero-subtitle">Bid on exclusive auctions and find treasures at unbeatable prices</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-large">Browse Auctions</button>
+            <button class="btn btn-outline btn-large">Start Selling</button>
+          </div>
+        </div>
+        <div class="hero-image">
+          <div class="hero-placeholder">
+            <span>🏆</span>
+            <p>Premium Auctions</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Auctions -->
+    <section id="auctions" class="auctions-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured Auctions</h2>
+          <p>Don't miss out on these amazing opportunities</p>
+        </div>
+        <div id="auctionsGrid" class="auctions-grid">
+          <!-- Auctions will be loaded here dynamically -->
+        </div>
+        <div class="load-more">
+          <button id="loadMoreBtn" class="btn btn-outline">Load More Auctions</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2>How It Works</h2>
+          <p>Simple steps to start bidding or selling</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Register</h3>
+            <p>Create your free account and verify your identity</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>Browse & Bid</h3>
+            <p>Explore auctions and place competitive bids</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Win & Pay</h3>
+            <p>Complete payment and receive your items</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Login to Your Account</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create Your Account</h3>
+        <span class="modal-close">&times;</span>
+      </div>
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label for="registerUsername">Username</label>
+          <input type="text" id="registerUsername" required>
+        </div>
+        <div class="form-group">
+          <label for="registerEmail">Email</label>
+          <input type="email" id="registerEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <input type="password" id="registerPassword" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3>Auction House</h3>
+          <p>Your trusted auction platform</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-section">
+            <h4>Platform</h4>
+            <a href="#">Browse Auctions</a>
+            <a href="#">Sell Items</a>
+            <a href="#">How It Works</a>
+          </div>
+          <div class="footer-section">
+            <h4>Support</h4>
+            <a href="#">Help Center</a>
+            <a href="#">Contact Us</a>
+            <a href="#">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Auction House. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="static/js/app.js"></script>
+</body>
+
+</html>

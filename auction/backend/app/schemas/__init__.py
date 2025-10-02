@@ -1,16 +1,13 @@
-"""
-API schemas package.
-"""
-
-from .bid import Bid, BidCreate, BidSummary, BidWithDetails
-from .category import Category, CategoryCreate, CategoryUpdate, CategoryWithStats
-from .item import Item, ItemCreate, ItemSummary, ItemUpdate, ItemWithDetails
-from .user import LoginRequest, Token, TokenData, User, UserCreate, UserInDB, UserUpdate
+from .user import User, UserCreate, UserUpdate, UserInDB
+from .item import Item, ItemCreate, ItemUpdate, ItemWithBids
+from .bid import Bid, BidCreate
+from .auth import Token, TokenData, LoginRequest
+from .common import UserRole, AuctionStatus
 
 __all__ = [
     "User", "UserCreate", "UserUpdate", "UserInDB",
+    "Item", "ItemCreate", "ItemUpdate", "ItemWithBids",
+    "Bid", "BidCreate",
     "Token", "TokenData", "LoginRequest",
-    "Category", "CategoryCreate", "CategoryUpdate", "CategoryWithStats",
-    "Item", "ItemCreate", "ItemUpdate", "ItemSummary", "ItemWithDetails",
-    "Bid", "BidCreate", "BidSummary", "BidWithDetails",
+    "UserRole", "AuctionStatus"
 ]

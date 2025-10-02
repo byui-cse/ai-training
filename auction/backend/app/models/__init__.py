@@ -1,10 +1,5 @@
-"""
-Database models package.
-"""
-
+from .user import User, UserRole
+from .item import Item, AuctionStatus
 from .bid import Bid
-from .category import Category
-from .item import Item
-from .user import User
 
-__all__ = ["User", "Category", "Item", "Bid"]
+__all__ = ["User", "UserRole", "Item", "AuctionStatus", "Bid"]

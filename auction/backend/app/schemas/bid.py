@@ -1,51 +1,29 @@
-"""
-Pydantic schemas for Bid model validation.
-"""
-
-from datetime import datetime
+from pydantic import BaseModel
 from typing import Optional
-
-from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class BidBase(BaseModel):
-    """Base bid schema."""
-    amount: float = Field(..., gt=0)
     item_id: int
+    amount: float
 
 
 class BidCreate(BidBase):
-    """Schema for creating a new bid."""
     pass
 
 
-class Bid(BidBase):
-    """Schema for bid responses."""
+class BidUpdate(BaseModel):
+    amount: Optional[float] = None
+
+
+class BidInDBBase(BidBase):
     id: int
     bidder_id: int
-    timestamp: datetime
+    created_at: datetime
 
     class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+        orm_mode = True
 
 
-class BidWithDetails(Bid):
-    """Schema for bid with bidder details."""
-    bidder_username: str
-    item_title: str
-
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
-
-
-class BidSummary(BaseModel):
-    """Schema for bid summary."""
-    amount: float
-    bidder_username: str
-    timestamp: datetime
-
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+class Bid(BidInDBBase):
+    pass

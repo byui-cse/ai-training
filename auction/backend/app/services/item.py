@@ -1,114 +1,44 @@
-"""
-Item service for auction item management operations.
-"""
-
-from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from sqlalchemy import and_, func
 from typing import List, Optional
-
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
-
-from app.models.item import Item
+from datetime import datetime
+from app.models.item import Item, AuctionStatus
 from app.models.bid import Bid
 from app.schemas.item import ItemCreate, ItemUpdate
 
 
-def get_item(db: Session, item_id: int) -> Optional[Item]:
-    """
-    Get item by ID with related data.
-
-    Args:
-        db: Database session
-        item_id: Item ID
-
-    Returns:
-        Item object or None if not found
-    """
-    return (
-        db.query(Item)
-        .options(
-            joinedload(Item.seller),
-            joinedload(Item.category),
-            joinedload(Item.bids).joinedload(Bid.bidder),
-        )
-        .filter(Item.id == item_id)
-        .first()
-    )
+def get_item_by_id(db: Session, item_id: int) -> Optional[Item]:
+    """Get item by ID."""
+    return db.query(Item).filter(Item.id == item_id).first()
 
 
-def get_items(
-    db: Session,
-    skip: int = 0,
-    limit: int = 100,
-    category_id: Optional[int] = None,
-    search: Optional[str] = None,
-    active_only: bool = True,
-    seller_id: Optional[int] = None,
-) -> List[Item]:
-    """
-    Get list of items with optional filtering.
+def get_items(db: Session, skip: int = 0, limit: int = 100) -> List[Item]:
+    """Get all items with pagination."""
+    return db.query(Item).offset(skip).limit(limit).all()
 
-    Args:
-        db: Database session
-        skip: Number of records to skip
-        limit: Maximum number of records to return
-        category_id: Filter by category ID
-        search: Search in title and description
-        active_only: Only return active auctions
-        seller_id: Filter by seller ID
 
-    Returns:
-        List of Item objects
-    """
-    query = db.query(Item).options(
-        joinedload(Item.seller),
-        joinedload(Item.category),
-    )
+def get_active_items(db: Session, skip: int = 0, limit: int = 100) -> List[Item]:
+    """Get active auction items."""
+    now = datetime.utcnow()
+    return db.query(Item).filter(
+        and_(Item.status == AuctionStatus.ACTIVE,
+             Item.start_time <= now,
+             Item.end_time > now)
+    ).offset(skip).limit(limit).all()
 
-    # Apply filters
-    if active_only:
-        query = query.filter(
-            and_(
-                Item.is_active == True,
-                Item.auction_start <= datetime.utcnow(),
-                Item.auction_end > datetime.utcnow(),
-            )
-        )
 
-    if category_id:
-        query = query.filter(Item.category_id == category_id)
-
-    if seller_id:
-        query = query.filter(Item.seller_id == seller_id)
-
-    if search:
-        search_filter = f"%{search}%"
-        query = query.filter(
-            or_(
-                Item.title.ilike(search_filter),
-                Item.description.ilike(search_filter),
-            )
-        )
-
-    return query.offset(skip).limit(limit).all()
+def get_user_items(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List[Item]:
+    """Get items for a specific user."""
+    return db.query(Item).filter(Item.seller_id == user_id).offset(skip).limit(limit).all()
 
 
 def create_item(db: Session, item: ItemCreate, seller_id: int) -> Item:
-    """
-    Create a new auction item.
-
-    Args:
-        db: Database session
-        item: Item creation data
-        seller_id: ID of the seller creating the item
-
-    Returns:
-        Created Item object
-    """
+    """Create a new auction item."""
     db_item = Item(
-        **item.model_dump(),
+        **item.dict(),
         seller_id=seller_id,
-        current_price=item.starting_price,  # Initialize current price
+        current_price=item.starting_price,
+        status=AuctionStatus.DRAFT
     )
     db.add(db_item)
     db.commit()
@@ -116,30 +46,16 @@ def create_item(db: Session, item: ItemCreate, seller_id: int) -> Item:
     return db_item
 
 
-def update_item(
-    db: Session, item_id: int, item_update: ItemUpdate, seller_id: int
-) -> Optional[Item]:
-    """
-    Update item information (only by seller).
+def update_item(db: Session, item_id: int, item_update: ItemUpdate, seller_id: int) -> Optional[Item]:
+    """Update an auction item (only by seller)."""
+    db_item = db.query(Item).filter(
+        and_(Item.id == item_id, Item.seller_id == seller_id)
+    ).first()
 
-    Args:
-        db: Database session
-        item_id: Item ID to update
-        item_update: Item update data
-        seller_id: ID of the seller (for authorization)
-
-    Returns:
-        Updated Item object or None if not found or not authorized
-    """
-    db_item = get_item(db, item_id)
-    if not db_item or db_item.seller_id != seller_id:
+    if not db_item:
         return None
 
-    # Don't allow updates to items with bids or ended auctions
-    if db_item.bids or not db_item.is_auction_active:
-        return None
-
-    update_data = item_update.model_dump(exclude_unset=True)
+    update_data = item_update.dict(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_item, field, value)
 
@@ -148,118 +64,58 @@ def update_item(
     return db_item
 
 
-def delete_item(db: Session, item_id: int, seller_id: int) -> bool:
-    """
-    Delete an item (only by seller, only if no bids).
+def activate_item(db: Session, item_id: int, seller_id: int) -> Optional[Item]:
+    """Activate an auction item."""
+    db_item = db.query(Item).filter(
+        and_(Item.id == item_id, Item.seller_id == seller_id, Item.status == AuctionStatus.DRAFT)
+    ).first()
 
-    Args:
-        db: Database session
-        item_id: Item ID to delete
-        seller_id: ID of the seller (for authorization)
-
-    Returns:
-        True if item was deleted, False otherwise
-    """
-    db_item = get_item(db, item_id)
-    if not db_item or db_item.seller_id != seller_id:
-        return False
-
-    # Don't allow deletion of items with bids
-    if db_item.bids:
-        return False
-
-    db.delete(db_item)
-    db.commit()
-    return True
-
-
-def get_item_with_bid_stats(db: Session, item_id: int) -> Optional[dict]:
-    """
-    Get item with bidding statistics.
-
-    Args:
-        db: Database session
-        item_id: Item ID
-
-    Returns:
-        Dictionary with item and bid statistics
-    """
-    item = get_item(db, item_id)
-    if not item:
+    if not db_item:
         return None
 
-    # Get bid statistics
-    bid_stats = (
-        db.query(
-            func.count(Bid.id).label("bid_count"),
-            func.max(Bid.amount).label("highest_bid"),
-            func.max(Bid.timestamp).label("last_bid_time"),
-        )
-        .filter(Bid.item_id == item_id)
-        .first()
-    )
+    now = datetime.utcnow()
+    if db_item.start_time <= now < db_item.end_time:
+        db_item.status = AuctionStatus.ACTIVE
+        db.commit()
+        db.refresh(db_item)
 
-    return {
-        "item": item,
-        "bid_count": bid_stats.bid_count or 0,
-        "highest_bid": bid_stats.highest_bid or item.starting_price,
-        "last_bid_time": bid_stats.last_bid_time,
-    }
+    return db_item
 
 
-def get_ending_soon_items(db: Session, hours: int = 24, limit: int = 10) -> List[Item]:
-    """
-    Get items ending soon.
+def end_expired_auctions(db: Session) -> int:
+    """End auctions that have passed their end time. Returns count of ended auctions."""
+    now = datetime.utcnow()
+    result = db.query(Item).filter(
+        and_(Item.status == AuctionStatus.ACTIVE, Item.end_time <= now)
+    ).update({"status": AuctionStatus.ENDED})
 
-    Args:
-        db: Database session
-        hours: Number of hours from now
-        limit: Maximum number of items to return
-
-    Returns:
-        List of Item objects ending soon
-    """
-    end_time = datetime.utcnow() + timedelta(hours=hours)
-
-    return (
-        db.query(Item)
-        .options(joinedload(Item.seller), joinedload(Item.category))
-        .filter(
-            and_(
-                Item.is_active == True,
-                Item.auction_end <= end_time,
-                Item.auction_end > datetime.utcnow(),
-            )
-        )
-        .order_by(Item.auction_end)
-        .limit(limit)
-        .all()
-    )
+    db.commit()
+    return result
 
 
-def get_popular_items(db: Session, limit: int = 10) -> List[Item]:
-    """
-    Get most popular items by bid count.
+def get_item_with_bid_count(db: Session, item_id: int):
+    """Get item with bid count."""
+    from sqlalchemy import func
+    result = db.query(Item, func.count(Bid.id).label('bids_count')).outerjoin(Bid).filter(
+        Item.id == item_id
+    ).first()
 
-    Args:
-        db: Database session
-        limit: Maximum number of items to return
-
-    Returns:
-        List of popular Item objects
-    """
-    return (
-        db.query(Item)
-        .options(joinedload(Item.seller), joinedload(Item.category))
-        .join(Bid, isouter=True)
-        .filter(
-            and_(
-                Item.is_active == True,
-                Item.auction_end > datetime.utcnow(),
-            )
-        )
-        .group_by(Item.id)
-        .order_by(func.count(Bid.id).desc())
-        .limit(limit)
-        .all()
-    )
+    if result:
+        item, bids_count = result
+        return {
+            "id": item.id,
+            "title": item.title,
+            "description": item.description,
+            "starting_price": item.starting_price,
+            "current_price": item.current_price,
+            "reserve_price": item.reserve_price,
+            "seller_id": item.seller_id,
+            "start_time": item.start_time,
+            "end_time": item.end_time,
+            "status": item.status,
+            "image_url": item.image_url,
+            "created_at": item.created_at,
+            "updated_at": item.updated_at,
+            "bids_count": bids_count or 0
+        }
+    return None

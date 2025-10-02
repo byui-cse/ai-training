@@ -1,81 +1,49 @@
-"""
-Pydantic schemas for Item model validation.
-"""
-
-from datetime import datetime
+from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
+from .common import AuctionStatus
 
-from pydantic import BaseModel, Field
 
-
-# Base schemas
 class ItemBase(BaseModel):
-    """Base item schema with common fields."""
-    title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
-    starting_price: float = Field(..., gt=0)
-    reserve_price: Optional[float] = Field(None, gt=0)
-    buy_now_price: Optional[float] = Field(None, gt=0)
-    auction_end: datetime
-    category_id: Optional[int] = None
+    title: str
+    description: Optional[str] = None
+    starting_price: float
+    reserve_price: Optional[float] = None
+    start_time: datetime
+    end_time: datetime
+    image_url: Optional[str] = None
 
 
 class ItemCreate(ItemBase):
-    """Schema for creating a new item."""
     pass
 
 
 class ItemUpdate(BaseModel):
-    """Schema for updating item information."""
-    title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=2000)
-    reserve_price: Optional[float] = Field(None, gt=0)
-    buy_now_price: Optional[float] = Field(None, gt=0)
-    auction_end: Optional[datetime] = None
-    category_id: Optional[int] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    starting_price: Optional[float] = None
+    reserve_price: Optional[float] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    status: Optional[AuctionStatus] = None
+    image_url: Optional[str] = None
 
 
-# Response schemas
-class Item(ItemBase):
-    """Schema for item responses."""
+class ItemInDBBase(ItemBase):
     id: int
-    current_price: float
     seller_id: int
-    is_active: bool
-    is_sold: bool
-    winner_id: Optional[int]
-    auction_start: datetime
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
-
-
-class ItemWithDetails(Item):
-    """Schema for item with seller and category details."""
-    seller_username: str
-    category_name: Optional[str]
-    bid_count: int = 0
-    highest_bidder_username: Optional[str]
-
-    class Config:
-        """Pydantic configuration."""
-        from_attributes = True
-
-
-class ItemSummary(BaseModel):
-    """Schema for item summary in listings."""
-    id: int
-    title: str
     current_price: float
-    auction_end: datetime
-    seller_username: str
-    category_name: Optional[str]
-    bid_count: int = 0
-    is_auction_active: bool
+    status: AuctionStatus
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
-        """Pydantic configuration."""
-        from_attributes = True
+        orm_mode = True
+
+
+class Item(ItemInDBBase):
+    pass
+
+
+class ItemWithBids(Item):
+    bids_count: int = 0
