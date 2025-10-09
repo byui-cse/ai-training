@@ -14,7 +14,7 @@ This document describes the architecture for the **Simple Auction App (MVP)** de
 2) New user registration  
 3) Viewing available auction items
 
-The solution is a **Spring Boot monolith** with a **PostgreSQL** database, a **client-side HTML/CSS/JS frontend using Tailwind**, and is deployed on **Render (PaaS)**. Authentication is **Spring Security form login with server sessions (cookie-based)**. **No external integrations** are included in this version. **In-memory session storage** is used.
+The solution is a **Spring Boot monolith** with a **PostgreSQL** database, a **client-side HTML/CSS/JS frontend using Tailwind**, and is deployed using **Docker containers**. Authentication is **Spring Security form login with server sessions (cookie-based)**. **No external integrations** are included in this version. **In-memory session storage** is used.
 
 ---
 
@@ -22,12 +22,13 @@ The solution is a **Spring Boot monolith** with a **PostgreSQL** database, a **c
 
 ```mermaid
 flowchart LR
-  U[User Browser] -- HTTPS --> W[Spring Boot Monolith]
-  subgraph Monolith (Render)
+  U[User Browser] -- HTTPS --> LB[Load Balancer/Reverse Proxy]
+  LB --> W[Spring Boot Container]
+  subgraph Docker Environment
     W --> C[Controllers (Spring MVC)]
     C --> S[Services]
     S --> R[Repositories (JPA)]
-    R --> DB[(PostgreSQL)]
+    R --> DB[(PostgreSQL Container)]
   end
   U <--> ST[Static Assets (Tailwind, JS)]
 ```
@@ -37,8 +38,8 @@ flowchart LR
 - **Frontend:** Simple client-rendered HTML + Tailwind CSS delivered by the monolith (static assets served by Spring).  
 - **Auth:** Spring Security form login; session cookie maintained by container (in-memory session).  
 - **Data:** PostgreSQL for durable storage of users and auction items.  
-- **Hosting:** Render (PaaS) with separate **dev** and **prod** environments.  
-- **Operations:** Keep it simple—manual deploys, basic logs only.
+- **Deployment:** Docker containers with docker-compose for local development and container orchestration for production.  
+- **Operations:** Containerized deployment with health checks and proper logging.
 
 ---
 
@@ -131,17 +132,19 @@ erDiagram
 ## 7. Configuration
 
 ### 7.1 Spring Profiles
-- `dev`: local developer settings; `spring.jpa.hibernate.ddl-auto=update`, verbose logs.  
-- `prod`: managed migrations (Flyway/Liquibase optional), minimal logs.
+- `dev`: local developer settings; `spring.jpa.hibernate.ddl-auto=create`, verbose logs.  
+- `docker`: containerized environment with PostgreSQL container, optimized logging.
+- `prod`: production settings with managed migrations (Flyway), minimal logs.
 
 ### 7.2 Application Properties (examples)
 ```
-spring.datasource.url=jdbc:postgresql://<host>:<port>/<db>
+# Docker environment
+spring.datasource.url=jdbc:postgresql://postgres:5432/auction_app
 spring.datasource.username=${DB_USER}
-spring.datasource.password=${DB_PASS}
-spring.jpa.hibernate.ddl-auto=validate
-server.forward-headers-strategy=framework
-spring.session.store-type=none   # In-memory (container)
+spring.datasource.password=${DB_PASSWORD}
+spring.jpa.hibernate.ddl-auto=update
+spring.flyway.enabled=true
+management.endpoints.web.exposure.include=health,info
 ```
 
 ### 7.3 Security
@@ -154,39 +157,47 @@ spring.security.filter.dispatcher-types=REQUEST,ERROR
 
 ---
 
-## 8. Environments (Render)
+## 8. Environments (Docker)
 
-### 8.1 Dev
-- **Branch**: `main` or `develop` (your choice)  
-- **DB**: Managed PostgreSQL (dev tier)  
-- **Secrets**: `DB_USER`, `DB_PASS`, `SPRING_PROFILES_ACTIVE=dev`  
+### 8.1 Local Development
+- **Profile**: `docker`  
+- **DB**: PostgreSQL container via docker-compose  
+- **Environment**: `DB_USER`, `DB_PASSWORD`, `DATABASE_URL`  
 - **Scaling**: Single instance (in-memory sessions acceptable)
 
-### 8.2 Prod
-- **DB**: Managed PostgreSQL (production tier)  
-- **Secrets**: `DB_USER`, `DB_PASS`, `SPRING_PROFILES_ACTIVE=prod`  
-- **TLS**: Render-managed HTTPS  
-- **Scaling**: Start single instance; if scaling horizontally, **migrate sessions** to Redis or JDBC (Spring Session).
+### 8.2 Production
+- **Profile**: `prod`  
+- **DB**: Managed PostgreSQL or containerized PostgreSQL  
+- **Environment**: `DB_USER`, `DB_PASSWORD`, `DATABASE_URL`  
+- **TLS**: Reverse proxy/load balancer managed HTTPS  
+- **Scaling**: Container orchestration (Docker Swarm, Kubernetes); if scaling horizontally, **migrate sessions** to Redis or JDBC (Spring Session).
 
 ---
 
-## 9. Deployment (Render PaaS)
+## 9. Deployment (Docker)
 
-- Build: `./gradlew bootJar` (or Maven)  
-- Start: `java -jar build/libs/app.jar`  
-- Environment variables set via Render dashboard.  
-- Static assets built during CI/build stage (Tailwind: `npm run build` or `tailwindcss -i input.css -o output.css`), then served by Spring.
+### 9.1 Local Development
+- Build: `docker-compose up --build`  
+- Start: `docker-compose up`  
+- Stop: `docker-compose down`  
+- Environment variables set in docker-compose.yml or .env file.
 
-**Manual deploys** per “keep it simple” directive.
+### 9.2 Production Deployment
+- Build: `docker build -t auction-app .`  
+- Run: `docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod auction-app`  
+- Or use container orchestration (Docker Swarm, Kubernetes) for production scaling.
+
+**Container orchestration** recommended for production environments.
 
 ---
 
-## 10. Observability & Ops (Minimal)
+## 10. Observability & Ops (Containerized)
 
-- **Logging**: Spring Boot default logging to stdout; Render log viewer.  
-- **Health**: Optional Spring Boot Actuator `/actuator/health` (dev only initially).  
-- **Backups**: Use Render PostgreSQL automated backups.  
+- **Logging**: Spring Boot default logging to stdout; container logs via `docker logs` or log aggregation systems.  
+- **Health**: Spring Boot Actuator `/actuator/health` with Docker health checks.  
+- **Backups**: Container volume backups or managed database backups.  
 - **Error Handling**: Global exception handler (ControllerAdvice) returning friendly error pages.
+- **Monitoring**: Container metrics via Docker stats or orchestration platform monitoring.
 
 ---
 
@@ -197,7 +208,8 @@ spring.security.filter.dispatcher-types=REQUEST,ERROR
 - Secure, HttpOnly session cookie; set `SameSite=Lax` (default) or `Strict` as needed.  
 - Input validation on registration fields.  
 - Limit login attempts (optional), generic error messages.  
-- HTTPS enforced end-to-end (Render).
+- HTTPS enforced end-to-end (reverse proxy/load balancer).
+- Container security: non-root user, minimal base images, security scanning.
 
 ---
 
@@ -206,6 +218,7 @@ spring.security.filter.dispatcher-types=REQUEST,ERROR
 - **In-memory sessions** will cause logouts on restarts and break if horizontally scaling; plan migration to **Redis** or **JDBC Spring Session** when adding more instances.  
 - **No external storage** for images; if required later, integrate S3/Cloudinary.  
 - Add **bidding** domain, **rate limiting**, **metrics/monitoring**, **CI/CD**, and **migrations** in future iterations.
+- **Container orchestration** complexity increases with scale; consider managed Kubernetes services.
 
 ---
 
